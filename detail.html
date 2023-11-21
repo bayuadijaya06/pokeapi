@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PokeAPI - Detail</title>
+    <script
+      src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
+      defer
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
+      integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body x-data="main()" x-init="getQueryParam;">
+    <template x-if="pokemon">
+      <div class="container">
+        <div class="pt-5 d-flex justify-content-between">
+          <div>
+            <h2 x-text="pokemon.name"></h2>
+          </div>
+          <div class="text-right">
+            <a href="alpine.html"> <- back to front</a>
+          </div>
+        </div>
+        <div class="row">
+          <hr />
+
+          <div class="col-4">
+            <div class="pt-2">
+              <b>ID: </b>
+              <br />
+              <span x-text="pokemon.id"></span>
+            </div>
+            <div class="pt-2">
+              <b>Abilities: </b>
+              <template x-for="ability in pokemon.abilities">
+                <div>
+                  <span x-text="ability.ability.name"></span>
+                  <br />
+                </div>
+              </template>
+            </div>
+            <div class="pt-2">
+              <b>Base Experience: </b>
+              <br />
+              <span x-text="pokemon.base_experience"></span>
+            </div>
+            <div class="pt-2">
+              <b>Height: </b>
+              <br />
+              <span x-text="pokemon.height"></span>
+            </div>
+            <div class="pt-2">
+              <b>Weight: </b>
+              <br />
+              <span x-text="pokemon.weight"></span>
+            </div>
+            <div class="pt-2">
+              <b>Types: </b>
+              <template x-for="type in pokemon.types">
+                <div>
+                  <span x-text="type.type.name"></span>
+                  <br />
+                </div>
+              </template>
+            </div>
+            <div class="pt-2">
+              <b>Stats: </b>
+              <template x-for="stat in pokemon.stats">
+                <div>
+                  <span x-text="stat.stat.name + ': ' + stat.base_stat"></span>
+                  <br />
+                </div>
+              </template>
+            </div>
+          </div>
+          <template x-if="pokemon.moves.length<40">
+            <div class="col-4">
+              <div class="pt-2">
+                <b>Moves: </b>
+                <template x-for="move in pokemon.moves">
+                  <div>
+                    <span x-text="move.move.name"></span>
+                    <br />
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+          <template x-if="pokemon.moves.length>40">
+            <div class="col-4">
+              <div class="row">
+                <div class="col-6">
+                  <div class="pt-2">
+                    <b>Moves: </b>
+                    <template
+                      x-for="(item, index) in pokemon.moves.slice(0,40)"
+                      :key="index"
+                    >
+                      <div>
+                        <span x-text="item.move.name"></span>
+                        <br />
+                      </div>
+                    </template>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="pt-2">
+                    <br />
+                    <template
+                      x-for="(item, index) in pokemon.moves.slice(41)"
+                      :key="index"
+                    >
+                      <div>
+                        <span x-text="item.move.name"></span>
+                        <br />
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <div class="col-4">
+            <div class="pt-2 row">
+              <div class="col-6">
+                <b>Sprites: </b>
+                <br />
+                <span>Back:</span>
+                <br />
+                <img
+                  x-bind:src="pokemon.sprites.back_default? pokemon.sprites.back_default : ''"
+                  alt=""
+                />
+                <br />
+                <span>Front:</span>
+                <br />
+                <img
+                  x-bind:src="pokemon.sprites.front_default? pokemon.sprites.front_default : ''"
+                  alt=""
+                />
+                <br />
+                <span x-show="pokemon.sprites.back_female">Back Female:</span>
+                <br />
+                <img
+                  x-bind:src="pokemon.sprites.back_female? pokemon.sprites.back_female : ''"
+                  alt=""
+                />
+                <br />
+                <span x-show="pokemon.sprites.front_female">Front Female:</span>
+                <br />
+                <img
+                  x-bind:src="pokemon.sprites.front_female? pokemon.sprites.front_female : ''"
+                  alt=""
+                />
+                <br />
+              </div>
+              <div class="col-6">
+                <br />
+
+                <span>Back Shiny:</span>
+                <br />
+                <img
+                  x-bind:src="pokemon.sprites.back_shiny? pokemon.sprites.back_shiny : ''"
+                  alt=""
+                />
+                <br />
+                <span>Front Shiny:</span>
+                <br />
+                <img
+                  x-bind:src="pokemon.sprites.front_shiny? pokemon.sprites.front_shiny : ''"
+                  alt=""
+                />
+                <br />
+                <span x-show="pokemon.sprites.back_shiny_female"
+                  >Back Shiny Female:</span
+                >
+                <br />
+                <img
+                  x-bind:src="pokemon.sprites.back_shiny_female? pokemon.sprites.back_shiny_female : ''"
+                  alt=""
+                />
+                <br />
+                <span x-show="pokemon.sprites.front_shiny_female"
+                  >Front Shiny Female:</span
+                >
+                <br />
+                <img
+                  x-bind:src="pokemon.sprites.front_shiny_female? pokemon.sprites.front_shiny_female : ''"
+                  alt=""
+                />
+              </div>
+            </div>
+            <!-- <div class="pt-2">
+              <b>Evolves to:</b>
+              <br />
+              <span x-text="evolution"></span>
+            </div> -->
+          </div>
+        </div>
+      </div>
+    </template>
+  </body>
+  <script>
+    function fetchData(url) {
+      return fetch(url).then((response) => response.json());
+    }
+
+    function main() {
+      return {
+        pokemon: null,
+        pokename: null,
+        // evolution: null,
+        async getQueryParam() {
+          const urlParams = new URLSearchParams(window.location.search);
+          this.pokename = urlParams.get("name");
+          // console.log(this.pokename);
+          this.fetchPokemon();
+        },
+        async fetchPokemon() {
+          try {
+            const response = await fetchData(
+              "https://pokeapi.co/api/v2/pokemon/" + this.pokename
+            );
+            this.pokemon = response;
+            // this.fetchEvolution(response.id);
+          } catch (error) {
+            console.error("Error fetching pokemon information:", error);
+          }
+        },
+        // async fetchEvolution(id) {
+        //   try {
+        //     const response = await fetchData(
+        //       "https://pokeapi.co/api/v2/evolution-chain/" + id
+        //     );
+        //     console.log(response);
+        //     this.evolution = response.chain.evolves_to[0].species.name;
+        //   } catch (error) {
+        //     console.error("Error fetching pokemon information:", error);
+        //   }
+        // },
+      };
+    }
+
+    document.addEventListener("alpine:initialized", () => {
+      Alpine.data("main", main);
+    });
+  </script>
+</html>

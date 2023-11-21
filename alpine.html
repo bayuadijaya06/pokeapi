@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PokeAPI</title>
+    <script
+      src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
+      defer
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body x-data="main()" x-init="fetchPokemon">
+    <div class="container">
+      <h1 class="my-3">PokeAPI x Alpine</h1>
+      <div class="my-3">
+        <button @click="fetchBerryInfo" class="btn btn-primary" type="button">
+          Fetch Random Berry
+        </button>
+        <button @click="fetchMove" class="btn btn-info">
+          Fetch Random Move
+        </button>
+        <button
+          class="btn btn-danger"
+          @click="{berryInfo.name='', move.name=''}"
+        >
+          Clear
+        </button>
+        <div x-show="berryInfo.name" x-transition class="my-3">
+          <div class="card text-dark bg-light mb-3">
+            <div class="card-header">Berry Info</div>
+            <div class="card-body">
+              <h5 class="card-title" x-text="berryInfo.name"></h5>
+              <span class="card-text" x-text="'Size: ' + berryInfo.size"></span>
+              <br />
+              <span
+                class="card-text"
+                x-text="'Smoothness: ' + berryInfo.smoothness"
+              ></span>
+            </div>
+          </div>
+          <!-- <h2 x-text="berryInfo.name"></h2>
+          <p x-text="'Size: ' + berryInfo.size"></p>
+          <p x-text="'Smoothness: ' + berryInfo.smoothness"></p> -->
+        </div>
+        <div x-show="move.name" x-transition class="my-3">
+          <div class="card text-dark bg-light mb-3">
+            <div class="card-header">Move</div>
+            <div class="card-body">
+              <h5 class="card-title" x-text="move.name"></h5>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- <button @click="fetchPokemon">Fetch Pokemons</button> -->
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="poke-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#pokemon"
+            type="button"
+            role="tab"
+            aria-controls="home"
+            aria-selected="true"
+            @click="{setAndFetch('')}"
+          >
+            Pokemon
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="berries-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#berries"
+            type="button"
+            role="tab"
+            aria-controls="profile"
+            aria-selected="false"
+            @click="{setAndFetchBerries('')}"
+          >
+            Berries
+          </button>
+        </li>
+      </ul>
+      <div class="tab-content" id="myTabContent">
+        <div
+          class="tab-pane fade show active"
+          id="pokemon"
+          role="tabpanel"
+          aria-labelledby="poke-tab"
+        >
+          <div x-show="pokemons" x-transition class="m-3 row">
+            <p class="p-0"><b>Pokemon List</b></p>
+            <div class="input-group mb-3 col-6 p-0">
+              <input
+                type="text"
+                class="form-control"
+                aria-describedby="btn-search"
+                id="search-pokemon"
+                placeholder="Enter Full Pokemon Name or ID"
+                x-model="pokename"
+                @keydown.enter="fetchPokemon"
+              />
+              <button
+                @click="fetchPokemon"
+                class="btn btn-primary"
+                id="btn-search"
+              >
+                Search
+              </button>
+            </div>
+            <template x-if="!isSearch">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                  </tr>
+                </thead>
+                <tbody class="align-middle">
+                  <template x-for="pokemon in pokemons">
+                    <tr
+                      @click="setAndFetch(pokemon.name)"
+                      style="cursor: pointer"
+                    >
+                      <td
+                        x-text="pokemon.url? (pokemon.url.substring(34)).replace('/', '') : ''"
+                      ></td>
+                      <td x-text="pokemon.name"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </template>
+            <template x-if="isSearch">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Height</th>
+                    <th>Weight</th>
+                    <th>Sprite</th>
+                    <th>Open Details</th>
+                  </tr>
+                </thead>
+                <tbody class="align-middle">
+                  <tr>
+                    <td x-text="pokeSearch.id"></td>
+                    <td x-text="pokeSearch.name"></td>
+                    <td x-text="pokeSearch.height"></td>
+                    <td x-text="pokeSearch.weight"></td>
+                    <td>
+                      <img
+                        x-bind:src="pokeSearch.sprites.front_default"
+                        alt=""
+                      />
+                    </td>
+                    <td>
+                      <a x-bind:href="'detail.html?name=' + pokeSearch.name">
+                        <button class="btn btn-primary">Open Detail</button>
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </template>
+            <template x-if="!isSearch">
+              <div class="d-flex justify-content-between">
+                <button
+                  @click="fetchPreviousPokemon"
+                  x-bind:disabled="!prevPokemon"
+                  class="btn btn-primary"
+                >
+                  <- Prev
+                </button>
+                <button
+                  @click="fetchNextPokemon"
+                  x-bind:disabled="!nextPokemon"
+                  class="btn btn-primary"
+                >
+                  Next ->
+                </button>
+              </div>
+            </template>
+          </div>
+        </div>
+        <div
+          class="tab-pane fade"
+          id="berries"
+          role="tabpanel"
+          aria-labelledby="berries-tab"
+        >
+          <div x-show="berries" x-transition class="m-3 row">
+            <p class="p-0"><b>Berries List</b></p>
+            <div class="input-group mb-3 col-6 p-0">
+              <input
+                type="text"
+                class="form-control"
+                aria-describedby="btn-search"
+                id="search-berries"
+                placeholder="Enter Full Berries Name or ID"
+                x-model="berryname"
+                @keydown.enter="fetchBerries"
+              />
+              <button
+                @click="fetchBerries"
+                class="btn btn-primary"
+                id="btn-search"
+              >
+                Search
+              </button>
+            </div>
+            <template x-if="!isSearchBerries">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                  </tr>
+                </thead>
+                <tbody class="align-middle">
+                  <template x-for="berry in berries">
+                    <tr
+                      @click="setAndFetchBerries(berry.name)"
+                      style="cursor: pointer"
+                    >
+                      <td
+                        x-text="berry.url? (berry.url.substring(32)).replace('/', '') : ''"
+                      ></td>
+                      <td x-text="berry.name"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </template>
+            <template x-if="isSearchBerries">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Firmness</th>
+                    <th>Growth Time</th>
+                    <th>Size</th>
+                    <th>Smoothness</th>
+                    <th>Open Details</th>
+                  </tr>
+                </thead>
+                <tbody class="align-middle">
+                  <tr>
+                    <td x-text="berrySearch.id"></td>
+                    <td x-text="berrySearch.name"></td>
+                    <td x-text="berrySearch.firmness.name"></td>
+                    <td x-text="berrySearch.growth_time"></td>
+                    <td x-text="berrySearch.size"></td>
+                    <td x-text="berrySearch.smoothness"></td>
+
+                    <td>
+                      <!-- <a x-bind:href="'detail.html?name=' + pokeSearch.name">
+                        <button class="btn btn-primary">Open Detail</button>
+                      </a> -->
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </template>
+            <template x-if="!isSearchBerries">
+              <div class="d-flex justify-content-between">
+                <button
+                  @click="fetchPreviousBerries"
+                  x-bind:disabled="!prevBerries"
+                  class="btn btn-primary"
+                >
+                  <- Prev
+                </button>
+                <button
+                  @click="fetchNextBerries"
+                  x-bind:disabled="!nextBerries"
+                  class="btn btn-primary"
+                >
+                  Next ->
+                </button>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+      <!-- MODAL -->
+      <div
+        x-show="isError"
+        @click.away="isError = false"
+        style="
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 999;
+        "
+      >
+        <div
+          style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            max-width: 400px;
+            border-radius: 1rem;
+          "
+          class="p-5"
+        >
+          <!-- Modal content -->
+          <h2>Error</h2>
+          <hr />
+          <div class="pb-3">
+            <p x-text="errorMsg"></p>
+          </div>
+
+          <div class="text-end">
+            <!-- Close button -->
+            <button @click="isError = false" class="btn btn-danger">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function fetchData(url) {
+        return fetch(url).then((response) => response.json());
+      }
+
+      function main() {
+        return {
+          berryInfo: {
+            name: "",
+            size: "",
+            smoothness: "",
+          },
+          move: {
+            name: "",
+          },
+          pokemons: null,
+          nextPokemon: null,
+          prevPokemon: null,
+          pokename: "",
+          pokeSearch: null,
+          isSearch: false,
+          berries: null,
+          nextBerries: null,
+          prevBerries: null,
+          berryname: "",
+          berrySearch: null,
+          isSearchBerries: false,
+          isError: false,
+          errorMsg: "",
+          async fetchBerryInfo() {
+            try {
+              const response = await fetchData(
+                "https://pokeapi.co/api/v2/berry/"
+              );
+              const berries = response.results;
+              const randomBerryIndex = Math.floor(
+                Math.random() * berries.length
+              );
+              const randomBerry = berries[randomBerryIndex];
+              const berryDetails = await fetchData(randomBerry.url);
+              this.berryInfo = {
+                name: berryDetails.name,
+                size: berryDetails.size || "Not available",
+                smoothness: berryDetails.smoothness || "Not available",
+              };
+            } catch (error) {
+              // console.error("Error fetching berry information:", error);
+              this.isError = true;
+              this.errorMsg = "Error fetching berry information: " + error;
+            }
+          },
+          async fetchMove() {
+            try {
+              const response = await fetchData(
+                "https://pokeapi.co/api/v2/move/"
+              );
+              const count = parseInt(response.count);
+
+              const randomMoveIndex = Math.floor(Math.random() * count);
+              //     console.log(randomMoveIndex);
+              const moveDetails = await fetchData(
+                "https://pokeapi.co/api/v2/move/" + randomMoveIndex
+              );
+              this.move = {
+                name: moveDetails.name,
+              };
+            } catch (error) {
+              // console.error("Error fetching move information:", error);
+              this.isError = true;
+              this.errorMsg = "Error fetching move information: " + error;
+            }
+          },
+          async fetchPokemon() {
+            // console.log(this.pokename);
+            try {
+              if (this.pokename != "") {
+                const response = await fetchData(
+                  "https://pokeapi.co/api/v2/pokemon/" + this.pokename
+                );
+                this.pokeSearch = response;
+                this.isSearch = true;
+              } else {
+                const response = await fetchData(
+                  "https://pokeapi.co/api/v2/pokemon/"
+                );
+                this.pokemons = response.results;
+                this.nextPokemon = response.next;
+                this.prevPokemon = response.previous;
+                this.isSearch = false;
+                this.fetchBerries();
+              }
+            } catch (error) {
+              // console.error("Error fetching pokemon information:", error);
+              this.isError = true;
+              this.errorMsg = "Error fetching pokemon information: " + error;
+            }
+          },
+          async fetchPreviousPokemon() {
+            if (this.prevPokemon != null) {
+              try {
+                const response = await fetchData(this.prevPokemon);
+                //  console.log(response);
+                this.pokemons = response.results;
+                this.nextPokemon = response.next;
+                this.prevPokemon = response.previous;
+              } catch (error) {
+                // console.error("Error fetching pokemon information: ", error);
+                this.isError = true;
+                this.errorMsg = "Error fetching pokemon information: " + error;
+              }
+            } else {
+              alert("This is the first page");
+            }
+          },
+          async fetchNextPokemon() {
+            try {
+              const response = await fetchData(this.nextPokemon);
+              this.pokemons = response.results;
+              this.nextPokemon = response.next;
+              this.prevPokemon = response.previous;
+              //     console.log(response.results);
+            } catch (error) {
+              // console.error("Error fetching pokemon information:", error);
+              this.isError = true;
+              this.errorMsg = "Error fetching pokemon information: " + error;
+            }
+          },
+          setAndFetch(name) {
+            this.pokename = name;
+            this.fetchPokemon();
+          },
+          async fetchBerries() {
+            try {
+              if (this.berryname != "") {
+                const response = await fetchData(
+                  "https://pokeapi.co/api/v2/berry/" + this.berryname
+                );
+                this.berrySearch = response;
+                this.isSearchBerries = true;
+              } else {
+                const response = await fetchData(
+                  "https://pokeapi.co/api/v2/berry/"
+                );
+                this.berries = response.results;
+                this.nextBerries = response.next;
+                this.prevBerries = response.previous;
+                this.isSearchBerries = false;
+              }
+            } catch (error) {
+              // console.error("Error fetching berries information:", error);
+              this.isError = true;
+              this.errorMsg = "Error fetching berry information: " + error;
+            }
+          },
+          async fetchPreviousBerries() {
+            if (this.prevBerries != null) {
+              try {
+                const response = await fetchData(this.prevBerries);
+                //  console.log(response);
+                this.berries = response.results;
+                this.nextBerries = response.next;
+                this.prevBerries = response.previous;
+              } catch (error) {
+                // console.error("Error fetching berries information:", error);
+                this.isError = true;
+                this.errorMsg = "Error fetching berry information: " + error;
+              }
+            } else {
+              alert("This is the first page");
+            }
+          },
+          async fetchNextBerries() {
+            try {
+              const response = await fetchData(this.nextBerries);
+              this.berries = response.results;
+              this.nextBerries = response.next;
+              this.prevBerries = response.previous;
+              //     console.log(response.results);
+            } catch (error) {
+              // console.error("Error fetching berries information:", error);
+              this.isError = true;
+              this.errorMsg = "Error fetching berry information: " + error;
+            }
+          },
+          setAndFetchBerries(name) {
+            this.berryname = name;
+            this.fetchBerries();
+          },
+        };
+      }
+
+      document.addEventListener("alpine:initialized", () => {
+        Alpine.data("main", main);
+      });
+    </script>
+  </body>
+</html>
